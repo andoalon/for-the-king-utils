@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+message Attack
+{
+    string name = 1;
+    int32 attempt_count = 2;
+    double success_probability_per_attempt = 3;
+    int32 max_damage = 4;
+}
+
+message Attacks
+{
+    repeated Attack attacks = 1;
+}
