@@ -168,6 +168,11 @@ struct Global
 {
 	Attacks attacks;
 	int damage_calculator_target_damage = 0;
+
+	static constexpr char confirm_delete_attack_popup_id[] = "Confirm deleting attack";
+	static constexpr int no_attack_to_delete = -1;
+
+	int attack_to_delete_index = no_attack_to_delete;
 };
 
 [[nodiscard]] proto::Attack to_protobuf(const Attack& attack)
@@ -234,19 +239,19 @@ struct FromProtobuf
 }
 
 constexpr char attacks_filename[] = "attacks.protobin";
-void save_attacks(const Attacks& attacks)
+void save_attacks(const Attacks& attacks, const char* filename = attacks_filename)
 {
-	const proto::Attacks out_attacks = to_protobuf(attacks);
-	std::ofstream out_file(attacks_filename, std::ios_base::binary);
+	std::ofstream out_file(filename, std::ios_base::binary);
 	if (!out_file.is_open())
 		return;
 
+	const proto::Attacks out_attacks = to_protobuf(attacks);
 	out_attacks.SerializeToOstream(&out_file);
 }
 
-[[nodiscard]] Attacks load_attacks()
+[[nodiscard]] Attacks load_attacks(const char* filename = attacks_filename)
 {
-	std::ifstream in_file(attacks_filename, std::ios_base::binary);
+	std::ifstream in_file(filename, std::ios_base::binary);
 	if (!in_file.is_open())
 		return {};
 
@@ -265,9 +270,34 @@ void update(Global& global)
 
 	if (ImGui::Begin("Attacks"))
 	{
-		for (Attack& attack : global.attacks)
+		if (ImGui::BeginPopupModal(Global::confirm_delete_attack_popup_id))
 		{
-			if (ImGui::CollapsingHeader((std::string(attack.name.data()) + "###" + std::to_string((std::uintptr_t)(&attack))).c_str()))
+			assert(global.attack_to_delete_index != Global::no_attack_to_delete && "Logic error");
+			assert(global.attack_to_delete_index >= 0 && global.attack_to_delete_index < global.attacks.size());
+			ImGui::Text("Do you want to delete the attack \"%s\"?", global.attacks[global.attack_to_delete_index].name.data());
+			if (ImGui::Button("Yes") || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_::ImGuiKey_Enter), false))
+			{
+				global.attacks.erase(global.attacks.begin() + global.attack_to_delete_index);
+				global.attack_to_delete_index = Global::no_attack_to_delete;
+
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("No"))
+			{
+				global.attack_to_delete_index = Global::no_attack_to_delete;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		const auto attack_count = static_cast<int>(global.attacks.size());
+		for (int i = 0; i < attack_count; ++i)
+		{
+			Attack& attack = global.attacks[i];
+			bool attack_is_open = true;
+			if (ImGui::CollapsingHeader((std::string(attack.name.data()) + "###" + std::to_string((std::uintptr_t)(&attack))).c_str(), &attack_is_open))
 			{
 				ImGui::PushID(&attack);
 
@@ -322,6 +352,14 @@ void update(Global& global)
 				}
 
 				ImGui::PopID();
+			}
+
+			if (!attack_is_open)
+			{
+				ImGui::OpenPopup(Global::confirm_delete_attack_popup_id);
+
+				assert(global.attack_to_delete_index == Global::no_attack_to_delete && "Logic error");
+				global.attack_to_delete_index = i;
 			}
 		}
 
