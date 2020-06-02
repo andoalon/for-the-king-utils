@@ -298,9 +298,9 @@ void update(Global& global)
 		{
 			Attack& attack = global.attacks[i];
 			bool attack_is_open = true;
-			if (ImGui::CollapsingHeader((std::string(attack.name.data()) + "###" + std::to_string((std::uintptr_t)(&attack))).c_str(), &attack_is_open))
+			if (ImGui::CollapsingHeader((std::string(attack.name.data()) + "###" + std::to_string(i)).c_str(), &attack_is_open))
 			{
-				ImGui::PushID(&attack);
+				ImGui::PushID(i);
 
 				bool attack_changed = false;
 
