@@ -6,6 +6,8 @@ imgui-sfml/2.1@bincrafters/stable
 # the one from bincrafters, so we use that one to avoid having
 # to download protobuf multiple times
 protobuf/3.9.1@bincrafters/stable
+
+[build_requires]
 protoc_installer/3.9.1@bincrafters/stable
 
 [options]
