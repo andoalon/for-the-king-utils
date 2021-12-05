@@ -19,15 +19,14 @@
 #ifdef _MSC_VER
 #	pragma warning(push)
 #	pragma warning(disable : 4127) // Conditional expression is constant
-#	pragma warning(disable : 4100) // unreferenced formal parameter
 #endif
 #include "attacks.pb.h"
 #ifdef _MSC_VER
 #	pragma warning(pop)
 #endif
 
-#if IMGUI_VERSION_NUM != 17500 && !defined ANDONI_DISABLE_IMGUI_VERSION_CHECK
-#	error IMGUI_VERSION_NUM unexpected. This program was built to use ImGui 1.75. Define ANDONI_DISABLE_IMGUI_VERSION_CHECK to disable this error
+#if IMGUI_VERSION_NUM != 18500 && !defined ANDONI_DISABLE_IMGUI_VERSION_CHECK
+#	error IMGUI_VERSION_NUM unexpected. This program was built to use ImGui 1.85. Define ANDONI_DISABLE_IMGUI_VERSION_CHECK to disable this error
 #endif
 
 void compute_probability_for_hit_count_recursive(
@@ -265,7 +264,7 @@ void save_attacks(const Attacks& attacks, const char* filename = attacks_filenam
 
 void update(Global& global)
 {
-#ifdef ANDONI_DEBUG
+#ifndef NDEBUG
 	ImGui::ShowDemoWindow();
 #endif
 
